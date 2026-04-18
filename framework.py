@@ -3,12 +3,19 @@ class TestCase:
     def __init__(self, test_method_name):
         self.test_method_name = test_method_name
 
-    def run(self):
-        self.set_up() 
+    def run(self, result):
+        result.test_started()
+        self.set_up()
 
-        test_method = getattr(self, self.test_method_name)
-        test_method() 
-        self.tear_down() 
+        try:
+            test_method = getattr(self, self.test_method_name)
+            test_method()
+        except AssertionError:
+            result.add_failure(self.test_method_name)
+        except Exception:
+            result.add_error(self.test_method_name)
+
+        self.tear_down()
 
     def set_up(self):
         pass
@@ -18,22 +25,29 @@ class TestCase:
 
 
 class TestResult:
-    def __init__(self):
+
+    RUN_MSG = 'run'
+    FAILURE_MSG = 'failed'
+    ERROR_MSG = 'error'
+
+    def __init__(self, suite_name=None):
         self.run_count = 0
         self.failures = []
         self.errors = []
 
     def test_started(self):
-        pass
+        self.run_count += 1
 
     def add_failure(self, test):
-        pass
+        self.failures.append(test)
 
     def add_error(self, test):
-        pass
+        self.errors.append(test)
 
     def summary(self):
-        pass
+        return f'{self.run_count} {self.RUN_MSG}, ' \
+               f'{len(self.failures)} {self.FAILURE_MSG}, ' \
+               f'{len(self.errors)} {self.ERROR_MSG}'
 
 
 class TestSuite:
@@ -64,20 +78,22 @@ class TestRunner:
 
 
 #------------------------------------------------------------------------------------------------
-from framework import TestCase
-
-
 class MyTest(TestCase):
 
-    def set_up(self):
-        print("set_up")
+    def test_ok(self):
+        assert True
 
-    def tear_down(self):
-        print("tear_down")
+    def test_fail(self):
+        assert False
 
-    def test_a(self):
-        print("test_a")
+    def test_error(self):
+        raise Exception()
 
 
-test = MyTest("test_a")
-test.run()
+result = TestResult()
+
+MyTest("test_ok").run(result)
+MyTest("test_fail").run(result)
+MyTest("test_error").run(result)
+
+print(result.summary())
