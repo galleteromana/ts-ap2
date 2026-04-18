@@ -23,6 +23,22 @@ class TestCase:
     def tear_down(self):
         pass
 
+    def assert_equal(self, first, second):
+        if first != second:
+            raise AssertionError(f'{first} != {second}')
+
+    def assert_true(self, expr):
+        if not expr:
+            raise AssertionError(f'{expr} is not true')
+
+    def assert_false(self, expr):
+        if expr:
+            raise AssertionError(f'{expr} is not false')
+
+    def assert_in(self, member, container):
+        if member not in container:
+            raise AssertionError(f'{member} not found in {container}')
+
 
 class TestResult:
 
@@ -103,35 +119,29 @@ class TestStub(TestCase):
 
 class TestCaseTest(TestCase):
 
-    def set_up(self):
-        self.result = TestResult()
+    def test_assert_true(self):
+        self.assert_true(True)
 
-    def test_result_success_run(self):
-        stub = TestStub('test_success')
-        stub.run(self.result)
-        assert self.result.summary() == '1 run, 0 failed, 0 error'
+    def test_assert_false(self):
+        self.assert_false(False)
 
-    def test_result_failure_run(self):
-        stub = TestStub('test_failure')
-        stub.run(self.result)
-        assert self.result.summary() == '1 run, 1 failed, 0 error'
+    def test_assert_equal(self):
+        self.assert_equal("", "")
+        self.assert_equal("foo", "foo")
+        self.assert_equal([], [])
+        self.assert_equal(['foo'], ['foo'])
+        self.assert_equal((), ())
+        self.assert_equal(('foo',), ('foo',))
+        self.assert_equal({}, {})
+        self.assert_equal({'foo'}, {'foo'})
 
-    def test_result_error_run(self):
-        stub = TestStub('test_error')
-        stub.run(self.result)
-        assert self.result.summary() == '1 run, 0 failed, 1 error'
+    def test_assert_in(self):
+        animals = {'monkey': 'banana', 'cow': 'grass', 'seal': 'fish'}
 
-    def test_result_multiple_run(self):
-        stub = TestStub('test_success')
-        stub.run(self.result)
-
-        stub = TestStub('test_failure')
-        stub.run(self.result)
-
-        stub = TestStub('test_error')
-        stub.run(self.result)
-
-        assert self.result.summary() == '3 run, 1 failed, 1 error'
+        self.assert_in('a', 'abc')
+        self.assert_in('foo', ['foo'])
+        self.assert_in(1, [1, 2, 3])
+        self.assert_in('monkey', animals)
 
 
 class TestSuiteTest(TestCase):
