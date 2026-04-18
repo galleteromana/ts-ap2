@@ -1,14 +1,19 @@
 class TestCase:
+
     def __init__(self, test_method_name):
         self.test_method_name = test_method_name
+
+    def run(self):
+        self.set_up() 
+
+        test_method = getattr(self, self.test_method_name)
+        test_method() 
+        self.tear_down() 
 
     def set_up(self):
         pass
 
     def tear_down(self):
-        pass
-
-    def run(self, result):
         pass
 
 
@@ -56,3 +61,23 @@ class TestRunner:
 
     def run(self, test):
         pass
+
+
+#------------------------------------------------------------------------------------------------
+from framework import TestCase
+
+
+class MyTest(TestCase):
+
+    def set_up(self):
+        print("set_up")
+
+    def tear_down(self):
+        print("tear_down")
+
+    def test_a(self):
+        print("test_a")
+
+
+test = MyTest("test_a")
+test.run()
