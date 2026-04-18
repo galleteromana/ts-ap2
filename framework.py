@@ -51,14 +51,16 @@ class TestResult:
 
 
 class TestSuite:
+
     def __init__(self):
         self.tests = []
 
     def add_test(self, test):
-        pass
+        self.tests.append(test)
 
     def run(self, result):
-        pass
+        for test in self.tests:
+            test.run(result)
 
 
 class TestLoader:
@@ -121,6 +123,39 @@ class TestCaseTest(TestCase):
 
         assert self.result.summary() == '3 run, 1 failed, 1 error'
 
+
+class TestSuiteTest(TestCase):
+
+    def test_suite_size(self):
+        suite = TestSuite()
+
+        suite.add_test(TestStub('test_success'))
+        suite.add_test(TestStub('test_failure'))
+        suite.add_test(TestStub('test_error'))
+
+        assert len(suite.tests) == 3
+
+    def test_suite_success_run(self):
+        result = TestResult()
+        suite = TestSuite()
+
+        suite.add_test(TestStub('test_success'))
+        suite.run(result)
+
+        assert result.summary() == '1 run, 0 failed, 0 error'
+
+    def test_suite_multiple_run(self):
+        result = TestResult()
+        suite = TestSuite()
+
+        suite.add_test(TestStub('test_success'))
+        suite.add_test(TestStub('test_failure'))
+        suite.add_test(TestStub('test_error'))
+
+        suite.run(result)
+
+        assert result.summary() == '3 run, 1 failed, 1 error'
+
 #------------------------------------------------------------------------------------------------
 class MyTest(TestCase):
 
@@ -135,10 +170,18 @@ class MyTest(TestCase):
 
 
 result = TestResult()
+suite = TestSuite()
 
-TestCaseTest('test_result_success_run').run(result)
-TestCaseTest('test_result_failure_run').run(result)
-TestCaseTest('test_result_error_run').run(result)
-TestCaseTest('test_result_multiple_run').run(result)
+suite.add_test(TestCaseTest('test_result_success_run'))
+suite.add_test(TestCaseTest('test_result_failure_run'))
+suite.add_test(TestCaseTest('test_result_error_run'))
+suite.add_test(TestCaseTest('test_result_multiple_run'))
+
+suite.add_test(TestSuiteTest('test_suite_size'))
+suite.add_test(TestSuiteTest('test_suite_success_run'))
+suite.add_test(TestSuiteTest('test_suite_multiple_run'))
+
+suite.run(result)
+print(result.summary())
 
 print(result.summary())
